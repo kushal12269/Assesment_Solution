@@ -1,0 +1,191 @@
+1. Table Creation Queries
+We'll need separate tables for each country (e.g., Table_India, Table_USA). These tables will have columns derived from your intermediate table layout. Additionally, columns like age and days_since_last_consult will be derived from existing data (DOB and Last Consulted Date).
+
+Sample Table Creation Query (for India):
+
+
+CREATE TABLE Table_India (
+    Customer_Name VARCHAR(255) NOT NULL,
+    Customer_ID Int NOT NULL,
+    Open_Date DATE NOT NULL,
+    Last_Consulted_Date DATE,
+    Vaccination_Type CHAR(5),
+    Doctor_Consulted VARCHAR(255),
+    State CHAR(5),
+    Country CHAR(5),
+    Post_Code INT,
+    DOB DATE,
+    Is_Active CHAR(1),
+    Age INT AS (YEAR(CURDATE()) - YEAR(DOB)),
+    Days_Since_Last_Consult INT AS (DATEDIFF(CURDATE(), Last_Consulted_Date)),
+    PRIMARY KEY (Customer_ID)
+);
+
+CREATE TABLE Table_USA (
+    Customer_Name VARCHAR(255) NOT NULL,
+    Customer_ID Int NOT NULL,
+    Open_Date DATE NOT NULL,
+    Last_Consulted_Date DATE,
+    Vaccination_Type CHAR(5),
+    Doctor_Consulted VARCHAR(255),
+    State CHAR(5),
+    Country CHAR(5),
+    Post_Code INT,
+    DOB DATE,
+    Is_Active CHAR(1),
+    Age INT AS (YEAR(CURDATE()) - YEAR(DOB)),
+    Days_Since_Last_Consult INT AS (DATEDIFF(CURDATE(), Last_Consulted_Date)),
+    PRIMARY KEY (Customer_ID)
+);
+
+CREATE TABLE Table_PHIL (
+    Customer_Name VARCHAR(255) NOT NULL,
+    Customer_ID Int NOT NULL,
+    Open_Date DATE NOT NULL,
+    Last_Consulted_Date DATE,
+    Vaccination_Type CHAR(5),
+    Doctor_Consulted VARCHAR(255),
+    State CHAR(5),
+    Country CHAR(5),
+    Post_Code INT,
+    DOB DATE,
+    Is_Active CHAR(1),
+    Age INT AS (YEAR(CURDATE()) - YEAR(DOB)),
+    Days_Since_Last_Consult INT AS (DATEDIFF(CURDATE(), Last_Consulted_Date)),
+    PRIMARY KEY (Customer_ID)
+);
+
+CREATE TABLE Table_NYC (
+    Customer_Name VARCHAR(255) NOT NULL,
+    Customer_ID Int NOT NULL,
+    Open_Date DATE NOT NULL,
+    Last_Consulted_Date DATE,
+    Vaccination_Type CHAR(5),
+    Doctor_Consulted VARCHAR(255),
+    State CHAR(5),
+    Country CHAR(5),
+    Post_Code INT,
+    DOB DATE,
+    Is_Active CHAR(1),
+    Age INT AS (YEAR(CURDATE()) - YEAR(DOB)),
+    Days_Since_Last_Consult INT AS (DATEDIFF(CURDATE(), Last_Consulted_Date)),
+    PRIMARY KEY (Customer_ID)
+);
+
+
+
+CREATE TABLE Table_AU (
+    Customer_Name VARCHAR(255) NOT NULL,
+    Customer_ID Int NOT NULL,
+    Open_Date DATE NOT NULL,
+    Last_Consulted_Date DATE,
+    Vaccination_Type CHAR(5),
+    Doctor_Consulted VARCHAR(255),
+    State CHAR(5),
+    Country CHAR(5),
+    Post_Code INT,
+    DOB DATE,
+    Is_Active CHAR(1),
+    Age INT AS (YEAR(CURDATE()) - YEAR(DOB)),
+    Days_Since_Last_Consult INT AS (DATEDIFF(CURDATE(), Last_Consulted_Date)),
+    PRIMARY KEY (Customer_ID)
+);
+
+INSERT INTO Table_USA (Customer_Name, Customer_ID, Open_Date, Last_Consulted_Date, Vaccination_Type, 
+                         Doctor_Consulted, State, Country, Post_Code, DOB, Is_Active)
+SELECT Customer_Name, Customer_ID, Open_Date, Last_Consulted_Date, Vaccination_Type, 
+       Doctor_Consulted, State, Country, Post_Code, DOB, Is_Active
+FROM Staging_Table st
+WHERE Country = 'USA'
+
+
+
+Inserting the PHIL country records in the below table
+
+INSERT INTO Table_PHIL (Customer_Name, Customer_ID, Open_Date, Last_Consulted_Date, Vaccination_Type, 
+                         Doctor_Consulted, State, Country, Post_Code, DOB, Is_Active)
+SELECT Customer_Name, Customer_ID, Open_Date, Last_Consulted_Date, Vaccination_Type, 
+       Doctor_Consulted, State, Country, Post_Code, DOB, Is_Active
+FROM Staging_Table st
+WHERE Country = 'PHIL'
+
+Inserting the NYC country records in the below table
+
+INSERT INTO Table_NYC (Customer_Name, Customer_ID, Open_Date, Last_Consulted_Date, Vaccination_Type, 
+                         Doctor_Consulted, State, Country, Post_Code, DOB, Is_Active)
+SELECT Customer_Name, Customer_ID, Open_Date, Last_Consulted_Date, Vaccination_Type, 
+       Doctor_Consulted, State, Country, Post_Code, DOB, Is_Active
+FROM Staging_Table st
+WHERE Country = 'NYC'
+
+Inserting the AU country records in the below table
+
+INSERT INTO Table_AU (Customer_Name, Customer_ID, Open_Date, Last_Consulted_Date, Vaccination_Type, 
+                         Doctor_Consulted, State, Country, Post_Code, DOB, Is_Active)
+SELECT Customer_Name, Customer_ID, Open_Date, Last_Consulted_Date, Vaccination_Type, 
+       Doctor_Consulted, State, Country, Post_Code, DOB, Is_Active
+FROM Staging_Table st
+WHERE Country = 'AU'
+This query creates a table for India, where Age and Days_Since_Last_Consult are calculated automatically as derived columns.
+
+2. Derived Columns (age and days since last consulted)
+
+Age is calculated based on the year difference between the current date and the customer's DOB.
+Age INT AS (YEAR(CURDATE()) - YEAR(DOB)),
+Days_Since_Last_Consult INT AS (DATEDIFF(CURDATE(), Last_Consulted_Date))
+
+
+3. Validation
+
+Validate the customer name sholud not include a special character
+
+select customer_name
+from staging
+where Customer_Name NOT LIKE ('%[^a-zA-Z ]%')
+
+Ensure Customer_ID is unique for each entry.
+
+SELECT customer_id, COUNT(*)
+FROM customer_table
+GROUP BY customer_id
+HAVING COUNT(*) > 1;
+
+Validate Open_Date and DOB are in proper date format.
+
+SELECT *
+FROM Staging_Table
+WHERE (STR_TO_DATE(Open_Date, '%YYYYMMDD') IS NULL;
+
+Validation to check if there are records where Days_Since_Last_Consult > 30
+
+
+SELECT * FROM Table_India 
+WHERE Days_Since_Last_Consult > 30;
+
+
+
+If the customer is shifted to another country and visits from that country then consider the record with the latest consultant date.
+
+INSERT INTO Table_India (Customer_Name, Customer_ID, Open_Date, Last_Consulted_Date, Vaccination_Type, 
+                         Doctor_Consulted, State, Country, Post_Code, DOB, Is_Active)
+SELECT Customer_Name, Customer_ID, Open_Date, Last_Consulted_Date, Vaccination_Type, 
+       Doctor_Consulted, State, Country, Post_Code, DOB, Is_Active
+FROM Staging_Table st
+WHERE Country = 'IND'
+ON DUPLICATE KEY UPDATE 
+    Last_Consulted_Date = (
+        SELECT GREATEST(ti.Last_Consulted_Date, MAX(st.Last_Consulted_Date)) 
+        FROM Table_India ti
+        WHERE ti.Customer_ID = st.Customer_ID
+    );
+
+
+
+
+
+
+
+
+
+
+
